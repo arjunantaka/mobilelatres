@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 class DetailPage extends StatefulWidget {
   final String menu;
@@ -31,6 +32,25 @@ class _DetailPageState extends State<DetailPage> {
     });
   }
 
+  Future<void> _launchURL(String url) async {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url; // Menambahkan 'https://' jika tidak ada
+    }
+
+    final Uri _url = Uri.parse(url);
+
+    print("Launching URL: $_url");
+
+    // Gunakan mode peluncuran yang lebih umum
+    if (await canLaunchUrl(_url)) {
+      print("Launching URL successfully: $_url");
+      await launchUrl(_url, mode: LaunchMode.platformDefault);
+    } else {
+      print("Could not launch URL: $_url");
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,15 +62,42 @@ class _DetailPageState extends State<DetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(detail!['image_url'] ?? '', height: 200),
+                  // Gambar yang dapat diklik untuk membuka URL
+                  GestureDetector(
+                    onTap: () {
+                      if (detail?['url'] != null) {
+                        _launchURL(detail!['url']);
+                      }
+                    },
+                    child: Image.network(
+                      detail!['image_url'] ?? '',
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                   SizedBox(height: 10),
-                  Text(detail!['title'], style: TextStyle(fontSize: 24)),
+                  // Judul yang dapat diklik untuk membuka URL
+                  GestureDetector(
+                    onTap: () {
+                      if (detail?['url'] != null) {
+                        _launchURL(detail!['url']);
+                      }
+                    },
+                    child: Text(
+                      detail!['title'],
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                   SizedBox(height: 10),
                   Text(detail!['summary']),
                   Spacer(),
+                  // Floating action button untuk membuka URL
                   FloatingActionButton(
                     onPressed: () {
-                      // Open URL
+                      if (detail?['url'] != null) {
+                        _launchURL(detail!['url']);
+                      }
                     },
                     child: Icon(Icons.open_in_browser),
                   ),

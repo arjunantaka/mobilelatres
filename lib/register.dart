@@ -1,42 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:latres/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'register.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     final prefs = await SharedPreferences.getInstance();
-    final String storedUsername = prefs.getString('username') ?? '';
-    final String storedPassword = prefs.getString('password') ?? '';
-
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    if (username == storedUsername && password == storedPassword) {
+    if (username.isNotEmpty && password.isNotEmpty) {
+      await prefs.setString('username', username);
+      await prefs.setString('password', password);
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Login berhasil')));
+          .showSnackBar(SnackBar(content: Text('Registrasi berhasil')));
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => LoginPage()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Username atau password salah')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Silakan isi semua kolom')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(title: Text('Register')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -53,18 +51,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _login,
-              child: Text('Login'),
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterPage()),
-                );
-              },
-              child: Text('Belum punya akun? Daftar di sini'),
+              onPressed: _register,
+              child: Text('Daftar'),
             ),
           ],
         ),
